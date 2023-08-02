@@ -10,15 +10,11 @@ Provisioning of Two Digital Ocean Droplets as WordPress Website Platforms Using 
 
 - <b>Digital Ocean Droplets</b>
 - <b>Ubuntu 20.04</b>
-
-<h2>Project Instructions:</h2>
-
+<h2>Network Topology: </h2><br/>
 <p align="center">
-Network Topology: <br/>
 <img src="https://i.imgur.com/g3hXiIz.png" width="80%" alt="Network Topology"/>
 <br />
-
-<section>
+<h2>Project Instructions:</h2>
 <h4>CONFIGURING THE UBUNTU SERVER</h4>
 
 Create Ubuntu Server: <br/>
@@ -380,7 +376,73 @@ Now that the script has been created we can run it, make sure you are in the sam
 ```
 sudo ansible-playbook name.yml
 ```
-</section>
+First error: <br/>
+<p align="center">
+    <img src="https://i.imgur.com/of0ENBc.png" height="80%" width="80%" alt="token"/><br/>
+
+This error is expected, we must go to the hosts file in /etc/ansible and add the IP of new droplets and then rerun playbook.
+<p align="center">
+    <img src="https://i.imgur.com/nyzfnTi.png" height="80%" width="80%" alt="token"/><br/>
+
+<p align="center">
+    <img src="https://i.imgur.com/9ca8RMK.png" height="80%" width="80%" alt="token"/><br/>
+
+Now we can rerun the playbook.<br/>
+There will be a second error that will be the same as the first, we can ignore it.<br/>
+
+<p align="center">
+    <img src="https://i.imgur.com/9441YrI.png" height="80%" width="80%" alt="token"/><br/>
+
+<p align="center">
+    <img src="https://i.imgur.com/f4f1Oxh.png" height="80%" width="80%" alt="token"/><br/>
+
+<p align="center">
+    <img src="https://i.imgur.com/2sDxEFw.png" height="80%" width="80%" alt="token"/><br/>
+
+<p align="center">
+    <img src="https://i.imgur.com/4V1SgSM.png" height="80%" width="80%" alt="token"/><br/>
+
+Congratulations! the script ran successfully.<br/>
+
+<h4>CONFIGURING WORDPRESS DROPLETS</h4>
+
+Navigate to WordPress:<br/>
+Now that your script was executed successfully, you should be able to access your WordPress site by going to ip_address/wp-admin.<br/>
+
+<p align="center">
+    <img src="https://i.imgur.com/e2NsSKr.png" height="80%" width="80%" alt="token"/><br/>
+
+Setup WordPress for droplet:<br/>
+Once at the configuration page for WordPress, click let’s go. Using the connection details established in your script, copy them over to the WordPress configuration page, then click submit.<br/>
+
+<p align="center">
+    <img src="https://i.imgur.com/B6gkcO0.png" height="80%" width="80%" alt="token"/><br/>
+
+Click run the installation.
+<p align="center">
+    <img src="https://i.imgur.com/tKJX9m2.png" height="80%" width="80%" alt="token"/><br/>
+
+Name your site, create a username and password for your WordPress site. Click install WordPress.<br/>
+
+<p align="center">
+    <img src="https://i.imgur.com/aVPDnKM.png" height="80%" width="80%" alt="token"/><br/>
+
+Click Login:<br/>
+
+<p align="center">
+    <img src="https://i.imgur.com/lqJ8T55.png" height="80%" width="80%" alt="token"/><br/>
+
+Use the credentials you just set, click Log In.<br/>
+
+<p align="center">
+    <img src="https://i.imgur.com/Hbh6Ayi.png" height="80%" width="80%" alt="token"/><br/>
+
+WordPress Home Page:<br/>
+
+<p align="center">
+    <img src="https://i.imgur.com/82uSTXL.png" height="80%" width="80%" alt="token"/><br/>
+
+Repeat this section for each droplet.<br/>
 <!--
  ```diff
 - text in red
