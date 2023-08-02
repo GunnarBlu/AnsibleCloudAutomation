@@ -19,6 +19,8 @@ Provisioning of Two Digital Ocean Droplets as WordPress Website Platforms Using 
 <! --- <br />
 <! --- <br />
 
+<h5>CONFIGURING THE UBUNTU SERVER</h5>
+
 1.  Create Ubuntu Server: <br/>
 Using VMware Fusion, create a new virtual machine and select Ubuntu, make sure it is 20.04.6. <br/>
 This will be our Linux server where Ansible will be installed.
@@ -50,7 +52,9 @@ Configure Ubuntu Server:
 <img src="https://i.imgur.com/mCIGKhO.png" height="80%" width="80%" alt="Ubuntu Server Creation"/>
 <br />
 <br />
-  
+
+<h5>INSTALLING ANSIBLE AND DEPENDENCIES</h5>
+
 4.	Install Ansible. <br/>
   
     ```
@@ -121,7 +125,8 @@ Using the command below, create a new SSH key and then check to make sure it was
 <p align="center">
 <br/>
 <img src="https://i.imgur.com/2fVJbAB.png" height="80%" width="80%" alt="Hosts"/>
-  
+
+<h5>CREATING ANSIBLE PLAYBOOK</h5>
 <!--
  ```diff
 - text in red
