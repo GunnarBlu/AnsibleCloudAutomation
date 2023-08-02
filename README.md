@@ -110,9 +110,13 @@ Replace localhost with the IP address of your server, then save the file.
 <p align="center">
 <br />
 
-8. Create SSH-Keygen
+8. Create SSH key for Ansible:
+Using the command below, create a new SSH key and then check to make sure it was created with the other command.
    ```
-   ssh-keygen -t rsa -b 4096 -f /path/to/your_key_name
+   ssh-keygen -t rsa
+   ```
+   ```
+   cat .ssh/id_rsa.pub
    ```
 You will have to specify the path to your .ssh file and then name the key what you want. <br/>
 Once done, you can navigate to the .ssh directory and “ls” to list all files and verify the keys were created.  
