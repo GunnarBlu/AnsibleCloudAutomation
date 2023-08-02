@@ -19,7 +19,7 @@ Provisioning of Two Digital Ocean Droplets as WordPress Website Platforms Using 
 <! --- <br />
 <! --- <br />
 
-1.  Create Ubuntu Server:
+1.  Create Ubuntu Server: <br/>
 Using VMware Fusion, create a new virtual machine and select Ubuntu, make sure it is 20.04.6. <br/>
 This will be our Linux server where Ansible will be installed.
 <p align="center">
@@ -51,7 +51,7 @@ Configure Ubuntu Server:
 <br />
 <br />
   
-4.	Install Ansible.
+4.	Install Ansible. <br/>
   
     ```
     sudo apt install ansible
@@ -63,7 +63,7 @@ Configure Ubuntu Server:
 <img src="https://i.imgur.com/qxmL3UB.png" height="80%" width="80%" alt="db"/>
 
   
- 5.	Install Python and Pip
+ 5.	Install Python and Pip <br/>
   
      ```
      sudo apt install python3
@@ -78,7 +78,7 @@ Configure Ubuntu Server:
      pip3 –version
      ```
 
-6.  Configure Ansible.cfg File
+6.  Configure Ansible.cfg File <br/>
 Navigate to the “ansible.cfg” file <br/>
      ```
      cd /etc/ansible
@@ -97,7 +97,7 @@ Next, scroll down and uncomment the line “host_key_checking = False”. Then s
 <img src="https://i.imgur.com/T3aUK5G.png" height="80%" width="80%" alt="SSH into Instances"/>
 <p align="center">
 
-7. Configure Hosts File
+7. Configure Hosts File <br/>
 Navigate to the path of your hosts file and add the following: <br/>
 ```
 [digitalocean] or [localhost]
@@ -110,23 +110,17 @@ Replace localhost with the IP address of your server, then save the file.
 <p align="center">
 <br />
 
-8. Create SSH key for Ansible:
+8. Create SSH key for Ansible: <br/>
 Using the command below, create a new SSH key and then check to make sure it was created with the other command.
    ```
    ssh-keygen -t rsa
    ```
    ```
    cat .ssh/id_rsa.pub
-   ```
-You will have to specify the path to your .ssh file and then name the key what you want. <br/>
-Once done, you can navigate to the .ssh directory and “ls” to list all files and verify the keys were created.  
-
+   ``` 
 <p align="center">
 <br/>
-<img src="https://i.imgur.com/Di80hLJ.png" height="80%" width="80%" alt="Hosts"/>
-<img src="https://i.imgur.com/Fjk2rGF.png" height="80%" width="80%" alt="Hosts"/>
-<p align="center">
-<br />
+<img src="https://i.imgur.com/2fVJbAB.png" height="80%" width="80%" alt="Hosts"/>
   
 <!--
  ```diff
