@@ -1,0 +1,165 @@
+- hosts: digitalocean
+  become: yes
+  
+  tasks:
+
+    - name: 1 | HIGH | RHEL-07-040800 | AUDIT | SNMP community strings on the Red Hat Enterprise Linux operating system must be changed from the default."
+      command: grep {{ item }} /etc/snmp/snmpd.conf
+      check_mode: false
+      failed_when: false
+      changed_when: false
+      register: rhel_07_040800_audit
+      with_items:
+        - public
+        - private
+
+    - name: 1 | HIGH | RHEL-07-040800 | PATCH | SNMP community strings on the Red Hat Enterprise Linux operating system must be changed from the default."
+      replace:
+        dest: /etc/snmp/snmpd.conf
+        regexp: (^com2sec.*default\s+)(public|private)
+        replace: \1{{ rhel7stig_snmp_community }}
+      notify: restart snmpd
+      with_items:
+        - "{{ rhel_07_040800_audit.results }}"
+      when: item.stdout_lines | length > 0
+
+    - name: 2 | HIGH | RHEL-07-040690 | PATCH | The Red Hat Enterprise Linux operating system must not have a File Transfer Protocol (FTP) server package installed unless needed."
+      package:
+        name: vsftpd
+        state: absent
+
+    - name: 3 | HIGH | RHEL-07-020010 | PATCH | The Red Hat Enterprise Linux operating system must not have the ypserv package installed."
+      package:
+        name: ypserv
+        state: absent
+
+    - name: 4 | HIGH | RHEL-07-020000 | PATCH | The Red Hat Enterprise Linux operating system must not have the rsh-server package installed."
+      package:
+        name: rsh-server
+        state: absent
+    
+    - name: 5 | HIGH | RHEL-07-010300 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that the SSH daemon does not allow authentication using an empty p>
+      lineinfile:
+        state: present
+        dest: /etc/ssh/sshd_config
+        regexp: "(?i)^#?PermitEmptyPasswords"
+        line: PermitEmptyPasswords no
+        validate: /usr/sbin/sshd -tf %s
+      notify: restart sshd
+
+    - name: 6 | HIGH | RHEL-07-020230 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that the x86 Ctrl-Alt-Delete key sequence is disabled on the comma>
+      systemd:
+        name: ctrl-alt-del.target
+        masked: yes
+
+    - name: 7 | HIGH | RHEL-07-040700 | PATCH | The Red Hat Enterprise Linux operating system must not have the Trivial File Transfer Protocol (TFTP) server package installed if not required for operational support."
+      package:
+        name:
+          - tftp
+          - tftp-server
+        state: absent
+     
+    - name: 8 | HIGH | RHEL-07-020050 | PATCH | The Red Hat Enterprise Linux operating system must prevent the installation of software, patches, service packs, device drivers, or op>
+      lineinfile:
+        dest: /etc/yum.conf
+        regexp: ^gpgcheck
+        line: gpgcheck=1
+        insertafter: '\[main\]'
+
+    - name: 9 | HIGH | RHEL-07-020060 | PATCH | The Red Hat Enterprise Linux operating system must prevent the installation of software, patches, service packs, device drivers, or op>
+      lineinfile:
+        dest: /etc/yum.conf
+        regexp: ^localpkg_gpgcheck
+        line: localpkg_gpgcheck=1
+        insertafter: '\[main\]'
+    
+    - name: 10 | MEDIUM | RHEL-07-010280 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that passwords are a minimum of 15 characters in length."
+      lineinfile:
+        create: yes
+        dest: /etc/security/pwquality.conf
+        regexp: '^#?\s*minlen'
+        line: "minlen = {{ rhel7stig_password_complexity.minlen | default('15') }}"
+        mode: 0644
+
+    - name: 11 | MEDIUM | RHEL-07-010118 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that /etc/pam.d/passwd implements /etc/pam.d/system-auth when changing passwords."
+      lineinfile:
+        path: /etc/pam.d/passwd
+        regexp: '^password\s+substack\s+system-auth'
+        line: 'password   substack     system-auth'
+   
+    - name: 12 | MEDIUM | RHEL-07-010119 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that when passwords are changed or new passwords are established, pwquality must be used."
+      lineinfile:
+        create: yes
+        dest: /etc/pam.d/system-auth
+        regexp: '^#?password\s+required pam_pwquality.so retry'
+        line: password required pam_pwquality.so retry=3
+        mode: 0644
+    
+    - name: 13 | MEDIUM | RHEL-07-010120 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that when passwords are changed or new passwords are established, the new password must contain at least one upper-case character."
+      lineinfile:
+        create: yes
+        dest: /etc/security/pwquality.conf
+        regexp: '^#?\s*ucredit'
+        line: "ucredit = {{ rhel7stig_password_complexity.ucredit | default('-1') }}"
+        mode: 0644    
+
+    - name: 14 | MEDIUM | RHEL-07-010130 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that when passwords are changed or new passwords are established, the new password must contain at least one lower-case character."
+      lineinfile:
+        create: yes
+        dest: /etc/security/pwquality.conf
+        regexp: '^#?\s*lcredit'
+        line: "lcredit = {{ rhel7stig_password_complexity.lcredit | default('-1') }}"
+        mode: 0644
+
+    - name: 15 | MEDIUM | RHEL-07-010140 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that when passwords are changed or new passwords are assigned, the new password must contain at least one numeric character."
+      lineinfile:
+        create: yes
+        dest: /etc/security/pwquality.conf
+        regexp: '^#?\s*dcredit'
+        line: "dcredit = {{ rhel7stig_password_complexity.dcredit | default('-1') }}"
+        mode: 0644
+
+    - name: 16 | MEDIUM | RHEL-07-010150 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that when passwords are changed or new passwords are established, the new password must contain at least one special character."
+      lineinfile:
+        create: yes
+        dest: /etc/security/pwquality.conf
+        regexp: '^#?\s*ocredit'
+        line: "ocredit = {{ rhel7stig_password_complexity.ocredit | default('-1') }}"
+        mode: 0644
+
+    - name: 17 | MEDIUM | RHEL-07-010180 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that when passwords are changed the number of repeating consecutive characters must not be more than three characters."
+      lineinfile:
+        create: yes
+        dest: /etc/security/pwquality.conf
+        regexp: '^#?\s*maxrepeat'
+        line: "maxrepeat = {{ rhel7stig_password_complexity.maxrepeat | default('3') }}"
+        mode: 0644
+
+    - name: 18 | MEDIUM | RHEL-07-010210 | PATCH | The Red Hat Enterprise Linux operating system must be configured to use the shadow file to store only encrypted representations of passwords."
+      lineinfile:
+        dest: /etc/login.defs
+        regexp: ^#?ENCRYPT_METHOD
+        line: "ENCRYPT_METHOD {{ rhel7stig_login_defaults.encrypt_method | default('SHA512') }}"
+
+    - name: 19 | MEDIUM | RHEL-07-010220 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that user and group account administration utilities are configured to store only encrypted representations of passwords."
+      lineinfile:
+        dest: /etc/libuser.conf
+        regexp: ^#?crypt_style
+        line: crypt_style = sha512
+
+    - name: 20 | MEDIUM | RHEL-07-010250 | PATCH | The Red Hat Enterprise Linux operating system must be configured so that passwords for new users are restricted to a 60-day maxi>
+      lineinfile:
+        create: yes
+        dest: /etc/login.defs
+        regexp: ^#?PASS_MAX_DAYS
+        line: "PASS_MAX_DAYS {{ rhel7stig_login_defaults.pass_max_days | default('60') }}"
+        mode: 0644    
+
+    - name: 21 | LOW | RHEL-07-020200 | PATCH | The Red Hat Enterprise Linux operating system must remove all software components after updated versions have been installed."
+      lineinfile:
+        dest: /etc/yum.conf
+        regexp: ^#?clean_requirements_on_remove
+        line: clean_requirements_on_remove=1
+        insertafter: '\[main\]'
+
+    

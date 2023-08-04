@@ -1,0 +1,4 @@
+[digitalocean]
+localhost ansible_connection=local
+143.244.175.132
+143.198.167.208

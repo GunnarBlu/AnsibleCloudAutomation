@@ -1,0 +1,231 @@
+#-------Cloud-Automation-Script-V1-------
+#-------Gunnar-Rotermund-------
+#-------202306-------
+#-------June-2023-------
+- hosts: digitalocean
+  become: yes
+  vars:
+    digital_ocean_token: dop_v1_70d68f23d5ae71b86c683a41e50ce946230a268b1155fffac9583693facab652
+    droplet_size: s-1vcpu-1gb
+    droplet_region: nyc1
+    droplet_image: CentOS-7-x64
+    droplets:
+      - RotermundG-202306-WP1
+      - RotermundG-202306-WP2
+ 
+  tasks:
+#-------Check-SSH-Key-------
+    - name: Check SSH Key
+      user:
+        name: '{{ansible_user_id}}'
+        generate_ssh_key: yes
+        ssh_key_file: .ssh/id_rsa
+
+#-------Add-SSH-Key-To-DO-------      
+    - name: Add SSH Key to Digital Ocean
+      community.digitalocean.digital_ocean_sshkey:
+        ssh_pub_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+        api_token: "{{ digital_ocean_token }}"
+        state: present
+      register: sshkey_result
+
+#-------Create-Droplets-And-Assign-SSH-Key-------     
+    - name: Create Droplet and Assign SSH Key
+      community.digitalocean.digital_ocean_droplet:
+        name: "{{ item }}"
+        api_token: "{{ digital_ocean_token }}"
+        size: "{{ droplet_size }}"
+        region: "{{ droplet_region }}"
+        image: "{{ droplet_image }}"
+        unique_name: yes    
+        wait_timeout: 600
+        ssh_keys: "{{ sshkey_result.data.ssh_key.id }}"
+        state: present
+      with_items: "{{ droplets }}"
+      loop_control:
+        pause: 3
+      register: droplet_result
+
+    - pause:
+        seconds: 35
+#-------LAMP-And-WordPress-Installation-------   
+- hosts: digitalocean
+  tasks:
+    - name: Disable SeLinux
+      become: yes
+      selinux:
+        state: disabled
+   
+    - name: Install LAMP
+      yum: 
+        name:
+        - httpd
+        - mariadb-server
+        - php
+        - nano
+        - wget
+        - rsync
+        - firewalld
+        - git-all
+
+    - name: Install Epel Repo
+      yum:
+        name: epel-release
+        state: latest
+        update_cache: yes
+
+    - name: Install Updates
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Install Apache
+      yum:
+        name: httpd
+        state: latest
+        
+    - name: Start Apache service
+      become: yes
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+    - name: Install Firewalld
+      yum:
+        name: firewalld
+        state: latest
+    - name: Firewall HTTP Configuration
+      become: yes
+      firewalld:
+        zone: public
+        service: http
+        permanent: yes
+        state: enabled
+    - name: Firewall SSH Configuration
+      become: yes
+      firewalld:
+        zone: public
+        service: ssh
+        permanent: yes
+        state: enabled
+    - name: Reload Firewall
+      become: yes
+      service:
+        name: firewalld
+        state: reloaded
+
+    - name: Install Python2
+      yum:
+        name: python2
+        state: latest
+
+    - name: Install Python3
+      yum:
+        name: python3
+        state: latest
+
+    - name: Install PIP
+      pip:
+        name: pip
+        extra_args: --upgrade
+        executable: pip3
+
+    - name: Install Remi Repo
+      yum:
+        name: "https://rpms.remirepo.net/enterprise/remi-release-7.rpm"
+        state: present
+
+    - name: Continue PHP Install
+      yum:
+        enablerepo: "remi,remi-php80"
+        name:
+        - php
+        - php-common
+        - php-cli
+        - php-gd
+        - php-curl
+        - php-mysqlnd
+        - php-fpm
+        - php-mysqli
+        - php-json
+        state: latest
+        update_cache: yes
+
+#-------Database-Configuration------- 
+    - name: Install MariaDB
+      yum:
+        name: mariadb-server
+        state: latest
+
+    - name: Check MariaDB Status
+      service:
+        name: mariadb
+        state: started    
+
+    - name: Install MySQL Packages
+      yum:
+        name: ['python3-PyMySQL', 'python-PyMySQL']
+        state: latest
+
+    - name: Create MariaDB Database
+      become: yes
+      mysql_db:
+        name: wordpress
+        state: present
+
+    - name: Create MariaDB Username & Password
+      become: yes
+      mysql_user:
+        name: wordpress
+        password: Jake$2005
+        priv: "wordpress.*:ALL,GRANT"
+        host: "localhost"         
+        state: present
+
+    - name: Flush Privilege
+      become: yes
+      command: 'mysql -ne "{{ item }}"'
+      with_items:
+       - FLUSH PRIVILEGES
+
+    - name: Restart MariaDB
+      become: yes
+      service:
+        name: mariadb
+        state: restarted
+
+#-------WordPress-Configuration------- 
+    - name: Download Wordpress
+      become: yes
+      get_url:
+        url=http://wordpress.org/latest.tar.gz
+        dest=/tmp/wordpress.latest.tar.gz
+        validate_certs=no
+
+    - name: Unzip Wordpress
+      unarchive:
+        src=/tmp/wordpress.latest.tar.gz
+        dest=/var/www/
+        copy=no
+
+    - name: Give Apache Ownership
+      file:
+        path: "/var/www/wordpress"
+        state: directory
+        owner: "apache"
+        group: "apache"
+        mode: '0755'
+
+    - name: Update Default Apache Site
+      become: yes
+      lineinfile:
+        dest=/etc/httpd/conf/httpd.conf
+        regexp="(.)+DocumentRoot /var/www/html"
+        line="DocumentRoot /var/www/wordpress"
+
+    - name: Restart Apache
+      become: yes
+      service:
+        name: httpd
+        state: restarted
+        enabled: yes
